@@ -1,0 +1,25 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: max_way_db
+      POSTGRES_USER: max_way_user
+      POSTGRES_PASSWORD: root
+
+  web:
+    build: .
+    command: >
+      bash -c "
+        python3 manage.py migrate &&
+        python3 manage.py collectstatic --no-input &&
+        gumicorn --reload -b 0.0.0.0:8000 config.wsgi --workers 1 -- timeout 300 --log-level DEBUG
+      "
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
